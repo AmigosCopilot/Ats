@@ -1,10 +1,13 @@
-import { Search, Bell, ChevronDown, Building2 } from 'lucide-react';
+import { Search, Bell, ChevronDown, Building2, LogOut } from 'lucide-react';
+import { useState } from 'react';
 
 interface HeaderProps {
   sidebarCollapsed: boolean;
+  onLogout?: () => void;
 }
 
-export function Header({ sidebarCollapsed }: HeaderProps) {
+export function Header({ sidebarCollapsed, onLogout }: HeaderProps) {
+  const [showUserMenu, setShowUserMenu] = useState(false);
   return (
     <header 
       className={`fixed top-0 right-0 bg-white border-b border-gray-200 z-10 transition-all duration-300 ${
@@ -40,18 +43,49 @@ export function Header({ sidebarCollapsed }: HeaderProps) {
           </button>
 
           {/* User Profile */}
-          <button className="flex items-center gap-3 px-2 py-1 hover:bg-gray-50 rounded-lg transition-colors">
-            <img
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop"
-              alt="User"
-              className="w-8 h-8 rounded-full"
-            />
-            <div className="text-left">
-              <div className="text-sm font-medium text-gray-700">John Smith</div>
-              <div className="text-xs text-gray-500">HR Manager</div>
-            </div>
-            <ChevronDown className="w-4 h-4 text-gray-500" />
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center gap-3 px-2 py-1 hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop"
+                alt="User"
+                className="w-8 h-8 rounded-full"
+              />
+              <div className="text-left">
+                <div className="text-sm font-medium text-gray-700">John Smith</div>
+                <div className="text-xs text-gray-500">HR Manager</div>
+              </div>
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            </button>
+
+            {/* User Dropdown Menu */}
+            {showUserMenu && (
+              <>
+                <div 
+                  className="fixed inset-0 z-10" 
+                  onClick={() => setShowUserMenu(false)}
+                ></div>
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                  <div className="px-4 py-3 border-b border-gray-200">
+                    <p className="text-sm font-medium text-gray-900">John Smith</p>
+                    <p className="text-xs text-gray-500">admin@ats.com</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      if (onLogout) onLogout();
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign out
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>

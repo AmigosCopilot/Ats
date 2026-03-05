@@ -8,10 +8,12 @@ import { Pipeline } from './components/Pipeline';
 import { PsychometricTests } from './components/PsychometricTests';
 import { Reports } from './components/Reports';
 import { Settings } from './components/Settings';
+import { Login } from './components/Login';
 
 export default function App() {
   const [activeView, setActiveView] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const renderView = () => {
     switch (activeView) {
@@ -34,6 +36,11 @@ export default function App() {
     }
   };
 
+  // Si no está autenticado, mostrar login
+  if (!isAuthenticated) {
+    return <Login onLogin={() => setIsAuthenticated(true)} />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Sidebar
@@ -42,7 +49,10 @@ export default function App() {
         collapsed={sidebarCollapsed}
         setCollapsed={setSidebarCollapsed}
       />
-      <Header sidebarCollapsed={sidebarCollapsed} />
+      <Header 
+        sidebarCollapsed={sidebarCollapsed} 
+        onLogout={() => setIsAuthenticated(false)}
+      />
       
       <main
         className={`transition-all duration-300 pt-16 ${
