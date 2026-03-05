@@ -1,9 +1,29 @@
 import { Mail, Phone, MapPin, Calendar, FileText, Clock, X, MessageSquare, ArrowLeft, Award, GraduationCap, Briefcase, Brain, Target, TrendingUp, Eye } from 'lucide-react';
-import { mockCandidates, Candidate } from '../data/mockData';
+import { Candidate } from '../data/mockData';
+import { useCandidates } from '../hooks/useCandidates';
 import { useState } from 'react';
 
 export function Candidates() {
+  const { candidates: mockCandidates, loading, error } = useCandidates();
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <h1 className="font-semibold text-gray-900 mb-1">Candidates</h1>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <h1 className="font-semibold text-gray-900 mb-1">Candidates</h1>
+        <div className="text-sm text-gray-500">Cargando...</div>
+      </div>
+    );
+  }
 
   // If a candidate is selected, show detailed profile view
   if (selectedCandidate) {

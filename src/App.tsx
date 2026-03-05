@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
@@ -9,11 +9,31 @@ import { PsychometricTests } from './components/PsychometricTests';
 import { Reports } from './components/Reports';
 import { Settings } from './components/Settings';
 import { Login } from './components/Login';
+import { getToken, removeToken } from './api/auth';
+import { api, isApiEnabled, setAuthInvalidateCallback } from './api/client';
 
 export default function App() {
   const [activeView, setActiveView] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(!isApiEnabled());
+
+  useEffect(() => {
+    setAuthInvalidateCallback(() => setIsAuthenticated(false));
+  }, []);
+
+  useEffect(() => {
+    if (!isApiEnabled() || authChecked) return;
+    const token = getToken();
+    if (!token) {
+      setAuthChecked(true);
+      return;
+    }
+    api
+      .get<{ id: number; name: string; email: string }>('/user')
+      .then(() => setIsAuthenticated(true))
+      .finally(() => setAuthChecked(true));
+  }, [authChecked]);
 
   const renderView = () => {
     switch (activeView) {
@@ -36,7 +56,25 @@ export default function App() {
     }
   };
 
-  // Si no está autenticado, mostrar login
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">Comprobando sesión...</p>
+      </div>
+    );
+  }
+
+  const handleLogout = () => {
+    if (isApiEnabled()) {
+      api.post('/logout', {}).catch(() => {}).finally(() => {
+        removeToken();
+        setIsAuthenticated(false);
+      });
+    } else {
+      setIsAuthenticated(false);
+    }
+  };
+
   if (!isAuthenticated) {
     return <Login onLogin={() => setIsAuthenticated(true)} />;
   }
@@ -51,7 +89,7 @@ export default function App() {
       />
       <Header 
         sidebarCollapsed={sidebarCollapsed} 
-        onLogout={() => setIsAuthenticated(false)}
+        onLogout={handleLogout}
       />
       
       <main

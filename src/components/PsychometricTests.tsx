@@ -1,7 +1,9 @@
 import { Plus, Brain, Users, BarChart3, FileText } from 'lucide-react';
-import { mockCandidates } from '../data/mockData';
+import { useCandidates } from '../hooks/useCandidates';
 
 export function PsychometricTests() {
+  const { candidates: mockCandidates, loading, error } = useCandidates();
+
   const tests = [
     {
       id: '1',
@@ -35,6 +37,24 @@ export function PsychometricTests() {
   const recentTestResults = mockCandidates
     .filter(c => c.psychometricTestStatus === 'Completed')
     .slice(0, 6);
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <h1 className="font-semibold text-gray-900 mb-1">Psychometric Tests</h1>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <h1 className="font-semibold text-gray-900 mb-1">Psychometric Tests</h1>
+        <div className="text-sm text-gray-500">Cargando...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

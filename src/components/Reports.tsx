@@ -1,10 +1,11 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { hiringFunnelData, candidatesPerJobData, testScoreData } from '../data/mockData';
+import { useDashboard } from '../hooks/useDashboard';
 import { Download, TrendingUp } from 'lucide-react';
 
 const COLORS = ['#4f46e5', '#06b6d4', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444'];
 
 export function Reports() {
+  const { hiringFunnelData, candidatesPerJobData, testScoreData, loading, error } = useDashboard();
   const hiringSuccessData = [
     { month: 'Aug', hired: 3 },
     { month: 'Sep', hired: 5 },
@@ -14,6 +15,24 @@ export function Reports() {
     { month: 'Jan', hired: 8 },
     { month: 'Feb', hired: 8 }
   ];
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <h1 className="font-semibold text-gray-900 mb-1">Reports & Analytics</h1>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <h1 className="font-semibold text-gray-900 mb-1">Reports & Analytics</h1>
+        <div className="text-sm text-gray-500">Cargando...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

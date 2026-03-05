@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Lock, Mail, Eye, EyeOff, Building2 } from 'lucide-react';
 import { Pricing } from './Pricing';
+import { api, isApiEnabled } from '../api/client';
+import { setToken } from '../api/auth';
 
 interface LoginProps {
   onLogin: () => void;
@@ -14,26 +16,33 @@ export function Login({ onLogin }: LoginProps) {
   const [error, setError] = useState('');
   const [showPricing, setShowPricing] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    // Simulación de autenticación
-    setTimeout(() => {
-      if (email && password) {
-        // Credenciales de demostración (puedes cambiarlas)
+    try {
+      if (isApiEnabled()) {
+        const res = await api.post<{ token: string }>('/login', { email, password });
+        if (res?.token) {
+          setToken(res.token);
+          onLogin();
+        }
+      } else {
+        // Demo sin backend: credenciales de demostración
+        await new Promise((r) => setTimeout(r, 600));
         if (email === 'admin@ats.com' && password === 'admin123') {
           onLogin();
         } else {
           setError('Invalid email or password');
-          setIsLoading(false);
         }
-      } else {
-        setError('Please fill in all fields');
-        setIsLoading(false);
       }
-    }, 1000);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error al iniciar sesión';
+      setError(msg.includes('Las credenciales') ? 'Email o contraseña incorrectos' : msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Si showPricing es true, mostrar la vista de pricing
@@ -156,15 +165,17 @@ export function Login({ onLogin }: LoginProps) {
             </button>
           </form>
 
-          {/* Demo Credentials Info */}
+          {/* Credenciales de prueba (backend o demo) */}
           <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center mb-2">Demo credentials:</p>
+            <p className="text-xs text-gray-500 text-center mb-2">
+              {isApiEnabled() ? 'Usuario de prueba (creado al ejecutar db:seed):' : 'Credenciales demo:'}
+            </p>
             <div className="bg-gray-50 rounded-lg p-3 space-y-1">
               <p className="text-xs text-gray-600">
                 <span className="font-medium">Email:</span> admin@ats.com
               </p>
               <p className="text-xs text-gray-600">
-                <span className="font-medium">Password:</span> admin123
+                <span className="font-medium">Contraseña:</span> admin123
               </p>
             </div>
           </div>

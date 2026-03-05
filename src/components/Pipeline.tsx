@@ -1,4 +1,5 @@
-import { mockCandidates, Candidate } from '../data/mockData';
+import { Candidate } from '../data/mockData';
+import { useCandidates } from '../hooks/useCandidates';
 import { useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -98,17 +99,29 @@ function StageColumn({ stage, candidates, onDrop }: StageColumnProps) {
 }
 
 export function Pipeline() {
-  const [candidates, setCandidates] = useState<Candidate[]>(mockCandidates);
+  const { candidates, loading, error, updateCandidate } = useCandidates();
 
   const handleDrop = (candidateId: string, newStatus: string) => {
-    setCandidates((prev) =>
-      prev.map((c) =>
-        c.id === candidateId
-          ? { ...c, status: newStatus as Candidate['status'] }
-          : c
-      )
-    );
+    updateCandidate(candidateId, { status: newStatus as Candidate['status'] });
   };
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <h1 className="font-semibold text-gray-900 mb-1">Pipeline View</h1>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <h1 className="font-semibold text-gray-900 mb-1">Pipeline View</h1>
+        <div className="text-sm text-gray-500">Cargando...</div>
+      </div>
+    );
+  }
 
   return (
     <DndProvider backend={HTML5Backend}>

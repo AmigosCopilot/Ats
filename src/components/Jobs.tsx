@@ -1,8 +1,12 @@
 import { Plus, MapPin, Users, Calendar, MoreVertical, Search, Filter, X, Eye, Mail, Phone, Briefcase, ArrowLeft, Award, GraduationCap, FileText, TrendingUp, Brain, Target } from 'lucide-react';
-import { mockJobs, mockCandidates, type Job, type Candidate } from '../data/mockData';
+import { type Job, type Candidate } from '../data/mockData';
+import { usePositions } from '../hooks/usePositions';
+import { useCandidates } from '../hooks/useCandidates';
 import { useState, useMemo } from 'react';
 
 export function Jobs() {
+  const { positions: mockJobs, loading: jobsLoading, error: jobsError } = usePositions();
+  const { candidates: mockCandidates } = useCandidates();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
@@ -15,15 +19,15 @@ export function Jobs() {
   // Get unique values for filters
   const departments = useMemo(() => {
     return Array.from(new Set(mockJobs.map(job => job.department))).sort();
-  }, []);
+  }, [mockJobs]);
 
   const jobTypes = useMemo(() => {
     return Array.from(new Set(mockJobs.map(job => job.type))).sort();
-  }, []);
+  }, [mockJobs]);
 
   const locations = useMemo(() => {
     return Array.from(new Set(mockJobs.map(job => job.location))).sort();
-  }, []);
+  }, [mockJobs]);
 
   // Filter jobs based on search and filters
   const filteredJobs = useMemo(() => {
@@ -49,7 +53,7 @@ export function Jobs() {
 
       return matchesSearch && matchesStatus && matchesDepartment && matchesJobType && matchesLocation;
     });
-  }, [searchQuery, statusFilter, departmentFilter, jobTypeFilter, locationFilter]);
+  }, [mockJobs, searchQuery, statusFilter, departmentFilter, jobTypeFilter, locationFilter]);
 
   // Check if any filters are active
   const hasActiveFilters = searchQuery !== '' || statusFilter !== 'all' || departmentFilter !== 'all' || 
@@ -68,7 +72,25 @@ export function Jobs() {
   const jobCandidates = useMemo(() => {
     if (!selectedJob) return [];
     return mockCandidates.filter(candidate => candidate.appliedJob === selectedJob.title);
-  }, [selectedJob]);
+  }, [selectedJob, mockCandidates]);
+
+  if (jobsError) {
+    return (
+      <div className="space-y-6">
+        <h1 className="font-semibold text-gray-900 mb-1">Jobs</h1>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{jobsError}</div>
+      </div>
+    );
+  }
+
+  if (jobsLoading) {
+    return (
+      <div className="space-y-6">
+        <h1 className="font-semibold text-gray-900 mb-1">Jobs</h1>
+        <div className="text-sm text-gray-500">Cargando...</div>
+      </div>
+    );
+  }
 
   // If a candidate is selected, show detailed profile view
   if (selectedCandidate) {

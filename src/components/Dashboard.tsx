@@ -1,7 +1,13 @@
 import { TrendingUp, TrendingDown, Users, Briefcase, Clock, CheckCircle, AlertCircle } from 'lucide-react';
-import { dashboardMetrics, mockCandidates, mockJobs } from '../data/mockData';
+import { useDashboard } from '../hooks/useDashboard';
+import { useCandidates } from '../hooks/useCandidates';
+import { usePositions } from '../hooks/usePositions';
 
 export function Dashboard() {
+  const { dashboardMetrics, hiringFunnelData, loading, error } = useDashboard();
+  const { candidates } = useCandidates();
+  const { positions } = usePositions();
+
   const metrics = [
     {
       title: 'Total Candidates',
@@ -45,8 +51,15 @@ export function Dashboard() {
     }
   ];
 
-  const recentCandidates = mockCandidates.slice(0, 5);
-  const recentJobs = mockJobs.filter(j => j.status === 'Open').slice(0, 4);
+  const recentCandidates = candidates.slice(0, 5);
+  const recentJobs = positions.filter(j => j.status === 'Open').slice(0, 4);
+  const pipelineStages = ['Applied', 'Screening', 'Interview', 'Psychometric Test', 'Final Interview', 'Hired', 'Rejected'];
+  const pipelineCounts = hiringFunnelData.length
+    ? pipelineStages.map(stage => {
+        const found = hiringFunnelData.find((s: { stage: string }) => s.stage === stage);
+        return { stage, count: found?.count ?? 0 };
+      })
+    : pipelineStages.map(stage => ({ stage, count: candidates.filter(c => c.status === stage).length }));
 
   return (
     <div className="space-y-6">
@@ -54,6 +67,14 @@ export function Dashboard() {
         <h1 className="font-semibold text-gray-900 mb-1">Dashboard</h1>
         <p className="text-sm text-gray-600">Welcome back! Here's what's happening with your hiring.</p>
       </div>
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+      {loading && (
+        <div className="text-sm text-gray-500">Cargando...</div>
+      )}
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -152,15 +173,12 @@ export function Dashboard() {
         </div>
         <div className="p-6">
           <div className="grid grid-cols-2 md:grid-cols-7 gap-4">
-            {['Applied', 'Screening', 'Interview', 'Psychometric Test', 'Final Interview', 'Hired', 'Rejected'].map((stage) => {
-              const count = mockCandidates.filter(c => c.status === stage).length;
-              return (
-                <div key={stage} className="text-center">
-                  <div className="text-2xl font-semibold text-gray-900 mb-1">{count}</div>
-                  <div className="text-xs text-gray-600">{stage}</div>
-                </div>
-              );
-            })}
+            {pipelineCounts.map(({ stage, count }) => (
+              <div key={stage} className="text-center">
+                <div className="text-2xl font-semibold text-gray-900 mb-1">{count}</div>
+                <div className="text-xs text-gray-600">{stage}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
