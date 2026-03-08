@@ -7,7 +7,17 @@ import { useState, useMemo } from 'react';
 export function Jobs() {
   const { positions: mockJobs, loading: jobsLoading, error: jobsError } = usePositions();
   const { candidates: mockCandidates } = useCandidates();
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'create'>('list');
+  const [createForm, setCreateForm] = useState({
+    title: '',
+    department: 'Engineering',
+    location: '',
+    type: 'Full-time',
+    description: '',
+    requirements: '',
+    application_deadline: '',
+    max_vacancies: '',
+  });
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -86,8 +96,84 @@ export function Jobs() {
   if (jobsLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="font-semibold text-gray-900 mb-1">Jobs</h1>
+        <h1 className="font-semibold text-gray-900 mb-1">Vacantes</h1>
         <div className="text-sm text-gray-500">Cargando...</div>
+      </div>
+    );
+  }
+
+  const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500';
+  const labelClass = 'block text-sm font-medium text-gray-700 mb-1';
+
+  // Vista crear vacante: misma pantalla, sin modal, ocupa todo el espacio
+  if (viewMode === 'create') {
+    return (
+      <div className="flex flex-col min-h-0 w-full">
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            onClick={() => setViewMode('list')}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          <div className="min-w-0">
+            <h1 className="font-semibold text-gray-900 mb-1">Nueva vacante</h1>
+            <p className="text-sm text-gray-600">Completa los datos de la plaza</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-6 w-full flex-1">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <label className={labelClass}>Título del puesto</label>
+                <input type="text" placeholder="ej. Desarrollador Frontend Senior" value={createForm.title} onChange={(e) => setCreateForm((f) => ({ ...f, title: e.target.value }))} className={inputClass} />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Departamento</label>
+                  <select value={createForm.department} onChange={(e) => setCreateForm((f) => ({ ...f, department: e.target.value }))} className={inputClass}>
+                    <option>Engineering</option><option>Product</option><option>Design</option><option>Marketing</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>Ubicación</label>
+                  <input type="text" placeholder="ej. Remoto" value={createForm.location} onChange={(e) => setCreateForm((f) => ({ ...f, location: e.target.value }))} className={inputClass} />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Tipo de contrato</label>
+                  <select value={createForm.type} onChange={(e) => setCreateForm((f) => ({ ...f, type: e.target.value }))} className={inputClass}>
+                    <option>Full-time</option><option>Part-time</option><option>Contrato</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>Vacantes máximas</label>
+                  <input type="number" min={1} placeholder="ej. 1" value={createForm.max_vacancies} onChange={(e) => setCreateForm((f) => ({ ...f, max_vacancies: e.target.value }))} className={inputClass} />
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>Fecha límite para aplicar</label>
+                <input type="date" value={createForm.application_deadline} onChange={(e) => setCreateForm((f) => ({ ...f, application_deadline: e.target.value }))} className={inputClass} />
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className={labelClass}>Descripción</label>
+                <textarea rows={5} placeholder="Descripción del puesto..." value={createForm.description} onChange={(e) => setCreateForm((f) => ({ ...f, description: e.target.value }))} className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>Requisitos</label>
+                <textarea rows={6} placeholder={'Un requisito por línea. Ej:\n• Experiencia mínima 2 años\n• Inglés intermedio'} value={createForm.requirements} onChange={(e) => setCreateForm((f) => ({ ...f, requirements: e.target.value }))} className={inputClass} />
+                <p className="mt-1 text-xs text-gray-500">Escribe cada requisito en una línea.</p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 pt-6 border-t border-gray-200 flex justify-end gap-3">
+            <button type="button" onClick={() => setViewMode('list')} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium text-sm">Cancelar</button>
+            <button type="button" onClick={() => setViewMode('list')} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium text-sm">Crear vacante</button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -688,15 +774,15 @@ export function Jobs() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-semibold text-gray-900 mb-1">Jobs</h1>
-          <p className="text-sm text-gray-600">Manage your job openings and postings</p>
+          <h1 className="font-semibold text-gray-900 mb-1">Vacantes</h1>
+          <p className="text-sm text-gray-600">Gestiona tus plazas y ofertas de empleo</p>
         </div>
         <button
-          onClick={() => setShowCreateModal(true)}
+          onClick={() => setViewMode('create')}
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm"
         >
           <Plus className="w-4 h-4" />
-          Create New Job
+          Nueva vacante
         </button>
       </div>
 
@@ -895,75 +981,6 @@ export function Jobs() {
         </div>
       </div>
 
-      {/* Create Job Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="font-semibold text-gray-900">Create New Job</h2>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Senior Frontend Developer"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option>Engineering</option>
-                    <option>Product</option>
-                    <option>Design</option>
-                    <option>Marketing</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Remote"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                  <option>Full-time</option>
-                  <option>Part-time</option>
-                  <option>Contract</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea
-                  rows={4}
-                  placeholder="Enter job description..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-            </div>
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm"
-              >
-                Create Job
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Lock, Mail, Eye, EyeOff, Building2 } from 'lucide-react';
 import { Pricing } from './Pricing';
 import { api, isApiEnabled } from '../api/client';
-import { setToken } from '../api/auth';
+import { setToken, setDemoAuthenticated } from '../api/auth';
 
 interface LoginProps {
   onLogin: () => void;
@@ -25,13 +25,16 @@ export function Login({ onLogin }: LoginProps) {
       if (isApiEnabled()) {
         const res = await api.post<{ token: string }>('/login', { email, password });
         if (res?.token) {
-          setToken(res.token);
+          const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '') ?? '';
+          setDemoAuthenticated(false);
+          setToken(res.token, apiUrl);
           onLogin();
         }
       } else {
         // Demo sin backend: credenciales de demostración
         await new Promise((r) => setTimeout(r, 600));
         if (email === 'admin@ats.com' && password === 'admin123') {
+          setDemoAuthenticated(true);
           onLogin();
         } else {
           setError('Invalid email or password');

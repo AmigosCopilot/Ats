@@ -36,11 +36,7 @@ class AuthController extends Controller
         return response()->json([
             'token' => $token,
             'token_type' => 'Bearer',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
+            'user' => $this->formatUser($user),
         ]);
     }
 
@@ -66,11 +62,7 @@ class AuthController extends Controller
         return response()->json([
             'token' => $token,
             'token_type' => 'Bearer',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
+            'user' => $this->formatUser($user),
         ], 201);
     }
 
@@ -85,16 +77,48 @@ class AuthController extends Controller
     }
 
     /**
-     * Usuario autenticado.
+     * Usuario autenticado (con empresa y plan de la empresa).
      */
     public function user(Request $request): JsonResponse
     {
         $user = $request->user();
+        $user->refresh(); // Asegurar datos actuales de la BD (p. ej. empresa_id actualizado)
+        return response()->json($this->formatUser($user));
+    }
 
-        return response()->json([
+    private function formatUser(User $user): array
+    {
+        $user->load(['empresa.plan']);
+        $plan = $user->empresa?->plan;
+
+        return [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-        ]);
+            'empresa_id' => $user->empresa_id,
+            'empresa' => $user->empresa ? [
+                'id' => $user->empresa->id,
+                'name' => $user->empresa->name,
+                'slug' => $user->empresa->slug,
+                'industry' => $user->empresa->industry,
+                'website' => $user->empresa->website,
+                'email' => $user->empresa->email,
+                'phone' => $user->empresa->phone,
+                'address' => $user->empresa->address,
+                'plan_id' => $user->empresa->plan_id,
+                'plan' => $plan ? [
+                    'id' => $plan->id,
+                    'name' => $plan->name,
+                    'slug' => $plan->slug,
+                    'description' => $plan->description,
+                    'price' => (float) $plan->price,
+                    'currency' => $plan->currency,
+                    'billing_interval' => $plan->billing_interval,
+                    'max_positions' => $plan->max_positions,
+                    'max_candidates_per_month' => $plan->max_candidates_per_month,
+                    'features' => $plan->features,
+                ] : null,
+            ] : null,
+        ];
     }
 }

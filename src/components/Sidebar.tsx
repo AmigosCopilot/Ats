@@ -9,13 +9,13 @@ interface SidebarProps {
 
 export function Sidebar({ activeView, setActiveView, collapsed, setCollapsed }: SidebarProps) {
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'jobs', label: 'Jobs', icon: Briefcase },
-    { id: 'candidates', label: 'Candidates', icon: Users },
-    { id: 'pipeline', label: 'Pipeline', icon: KanbanSquare },
-    { id: 'tests', label: 'Psychometric Tests', icon: Brain },
-    { id: 'reports', label: 'Reports & Analytics', icon: BarChart3 },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'dashboard', label: 'Panel', icon: LayoutDashboard },
+    { id: 'jobs', label: 'Vacantes', icon: Briefcase },
+    { id: 'candidates', label: 'Candidatos', icon: Users },
+    { id: 'pipeline', label: 'Embudo', icon: KanbanSquare },
+    { id: 'tests', label: 'Pruebas psicométricas', icon: Brain },
+    { id: 'reports', label: 'Informes y análisis', icon: BarChart3 },
+    { id: 'settings', label: 'Configuración', icon: Settings },
   ];
 
   return (

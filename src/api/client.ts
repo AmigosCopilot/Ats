@@ -1,6 +1,10 @@
-import { getToken, removeToken } from './auth';
+import { getToken, getStoredApiUrl, removeToken } from './auth';
 
-const BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || '';
+function getBaseUrl(): string {
+  const fromEnv = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || '';
+  if (fromEnv) return fromEnv;
+  return getStoredApiUrl() || '';
+}
 
 export type AuthInvalidateCallback = () => void;
 let onAuthInvalidate: AuthInvalidateCallback | null = null;
@@ -10,7 +14,7 @@ export function setAuthInvalidateCallback(cb: AuthInvalidateCallback) {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const url = `${BASE_URL}/api${path}`;
+  const url = `${getBaseUrl()}/api${path}`;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -44,5 +48,5 @@ export const api = {
 };
 
 export function isApiEnabled(): boolean {
-  return Boolean(BASE_URL);
+  return Boolean(getBaseUrl());
 }
